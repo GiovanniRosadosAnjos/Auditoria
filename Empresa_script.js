@@ -9,7 +9,7 @@ const msalConfig = {
   auth: {
     clientId: "4c77ad19-c4b5-4f57-8c58-85410895d5c9", // substitua pelo seu ID do app
     authority: "https://login.microsoftonline.com/cbc1c935-f23d-4266-9a16-53f2c6f7a8a1", // substitua pelo seu ID do tenant
-    redirectUri: "https://https://auditoria-three.vercel.app/" // substitua pelo seu domínio no Vercel
+    redirectUri: "https://auditoria-three.vercel.app" // corrigido, sem a barra final e sem https duplicado
   },
   cache: {
     cacheLocation: "sessionStorage", // ou localStorage
@@ -38,7 +38,16 @@ async function signIn() {
 // 4️⃣ Função para buscar dados da API e exibir na tabela
 async function carregarEmpresas() {
   try {
-    const resposta = await fetch('https://auditoria-api.vercel.app/api/empresas');
+    const tokenResponse = await msalInstance.acquireTokenSilent({
+      scopes: ["Files.ReadWrite"]
+    });
+
+    const resposta = await fetch('https://auditoria-api.vercel.app/api/empresas', {
+      headers: {
+        Authorization: `Bearer ${tokenResponse.accessToken}`
+      }
+    });
+
     const empresas = await resposta.json();
 
     const tabela = document.getElementById('tabela-empresas');
