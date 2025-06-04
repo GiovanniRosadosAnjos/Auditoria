@@ -38,7 +38,7 @@ async function signIn() {
 // 4️⃣ Função para buscar dados da API e exibir na tabela
 async function carregarEmpresas() {
   try {
-    const resposta = await fetch('http://localhost:3000/api/empresas');
+    const resposta = await fetch('https://auditoria-api.vercel.app/api/empresas');
     const empresas = await resposta.json();
 
     const tabela = document.getElementById('tabela-empresas');
