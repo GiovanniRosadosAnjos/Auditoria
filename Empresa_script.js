@@ -1,4 +1,4 @@
-// empresa_script.js (integrado com MSAL.js)
+// empresa_script.js (integrado com MSAL.js atualizado)
 
 // 1️⃣ Importar MSAL.js no HTML:
 // <script src="https://alcdn.msauth.net/browser/2.34.0/js/msal-browser.min.js"></script>
@@ -9,7 +9,7 @@ const msalConfig = {
   auth: {
     clientId: "4c77ad19-c4b5-4f57-8c58-85410895d5c9", // substitua pelo seu ID do app
     authority: "https://login.microsoftonline.com/cbc1c935-f23d-4266-9a16-53f2c6f7a8a1", // substitua pelo seu ID do tenant
-    redirectUri: "https://auditoria-three.vercel.app" // corrigido, sem a barra final e sem https duplicado
+    redirectUri: "https://auditoria-three.vercel.app/" // substitua pelo seu domínio no Vercel
   },
   cache: {
     cacheLocation: "sessionStorage", // ou localStorage
@@ -23,12 +23,15 @@ const msalInstance = new msal.PublicClientApplication(msalConfig);
 async function signIn() {
   try {
     const loginResponse = await msalInstance.loginPopup({
-      scopes: ["Files.ReadWrite"] // ou outras permissões necessárias
+      scopes: ["Files.ReadWrite"]
     });
 
     console.log("Login realizado com sucesso!", loginResponse);
 
-    // Após o login bem-sucedido, carregue os dados da tabela
+    // 🚀 Defina a conta ativa para uso posterior
+    msalInstance.setActiveAccount(loginResponse.account);
+
+    // Carrega os dados da tabela
     carregarEmpresas();
   } catch (error) {
     console.error("Erro no login:", error);
@@ -38,11 +41,18 @@ async function signIn() {
 // 4️⃣ Função para buscar dados da API e exibir na tabela
 async function carregarEmpresas() {
   try {
+    const account = msalInstance.getActiveAccount();
+
+    if (!account) {
+      throw new Error("Nenhuma conta ativa encontrada. Faça login novamente.");
+    }
+
     const tokenResponse = await msalInstance.acquireTokenSilent({
-      scopes: ["Files.ReadWrite"]
+      scopes: ["Files.ReadWrite"],
+      account: account
     });
 
-    const resposta = await fetch('https://auditoria-api.vercel.app/api/empresas', {
+    const resposta = await fetch('http://localhost:3000/api/empresas', {
       headers: {
         Authorization: `Bearer ${tokenResponse.accessToken}`
       }
